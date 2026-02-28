@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Seating Allocation - Exam Seating System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f2f6f8;
+            --surface: #ffffff;
+            --surface-2: #f8fbfc;
+            --ink: #16232e;
+            --muted: #637585;
+            --primary: #0f6a73;
+            --primary-2: #12828d;
+            --accent: #ef7e2d;
+            --line: #d7e3ea;
+            --ok: #0f8f53;
+            --error: #c0392b;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: radial-gradient(circle at 5% 0%, #e8f4f6 0%, transparent 30%),
+                        radial-gradient(circle at 95% 10%, #fff1e6 0%, transparent 28%),
+                        var(--bg);
+            color: var(--ink);
+        }
+
+        .navbar.bg-primary,
+        .card-header.bg-primary {
+            background: linear-gradient(120deg, var(--primary) 0%, var(--primary-2) 100%) !important;
+            border: 0;
+        }
+
+        .navbar-brand, .nav-link, .card-header h2 { font-weight: 700; }
+        .nav-link { opacity: 0.9; }
+        .nav-link:hover, .nav-link.active { opacity: 1; color: #fff !important; }
+
+        .card.shadow {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(20, 54, 80, 0.08) !important;
+        }
+
+        .form-section {
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            padding: 22px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+        }
+
+        .form-section h5 {
+            font-weight: 800;
+            color: #0f3f50;
+            letter-spacing: 0.2px;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #1e3443;
+            margin-bottom: 6px;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid #cbdbe4;
+            border-radius: 10px;
+            background: #fff;
+            min-height: 46px;
+            transition: all .2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-2);
+            box-shadow: 0 0 0 .2rem rgba(15, 106, 115, 0.15);
+        }
+
+        .form-text { color: var(--muted); }
+
+        .btn-primary {
+            background: linear-gradient(120deg, var(--primary), var(--primary-2));
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .algorithm-preview {
+            background: #eef6f8;
+            border: 1px dashed #b8d1de;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .bench-pattern {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 1px solid #333;
+            text-align: center;
+            line-height: 28px;
+            margin: 2px;
+            font-weight: 800;
+            border-radius: 6px;
+        }
+
+        .type-A { background-color: #d8f3e4; color: #0f6a3f; border-color: #78c19c; }
+        .type-B { background-color: #dceeff; color: #165c9a; border-color: #87b5e5; }
+        .type-C { background-color: #ffe2df; color: #9a342f; border-color: #e29f98; }
+
+        .room-input-section {
+            background: #fff;
+            border: 1px solid var(--line) !important;
+            border-radius: 12px;
+        }
+
+        .room-input-section h6 {
+            font-weight: 800;
+            color: #24485c;
+            margin-bottom: 12px;
+        }
+
+        .alert-success {
+            border: 1px solid #b8e7cc;
+            background: #ebf9f1;
+            color: #0d6a3f;
+        }
+
+        .alert-danger {
+            border: 1px solid #f0c2bc;
+            background: #fff1ef;
+            color: #8f2d23;
+        }
+
+        @media (max-width: 768px) {
+            .container.mt-5 { margin-top: 1.25rem !important; }
+            .card-header h2 { font-size: 1.3rem; }
+            .form-section { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'seating:home' %}">
+                <i class="fas fa-chair me-2"></i>Exam Seating System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{% url 'seating:upload_form' %}">
+                    <i class="fas fa-upload me-1"></i>Upload Data
+                </a>
+                <a class="nav-link active" href="{% url 'seating:allocation_form' %}">
+                    <i class="fas fa-cogs me-1"></i>Create Allocation
+                </a>
+                <a class="nav-link" href="{% url 'seating:allocation_history' %}">
+                    <i class="fas fa-history me-1"></i>History
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0">
+                            <i class="fas fa-cogs me-2"></i>Create Seating Allocation
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        {% if success_message %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>{{ success_message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <br><br>
+                            {% if allocation_id %}
+                            <a href="{% url 'seating:preview' allocation_id %}" class="btn btn-primary btn-sm me-2">
+                                <i class="fas fa-eye me-1"></i>Preview Allocation
+                            </a>
+                            <a href="{% url 'seating:allocation_pdf' allocation_id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-download me-1"></i>Download PDF
+                            </a>
+                            {% else %}
+                            <small class="text-muted">Debug: allocation_id is not set (value: {{ allocation_id }})</small>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if error_message %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>{{ error_message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <form method="post" id="allocationForm">
+                            {% csrf_token %}
+
+                            <!-- Basic Information -->
+                            <div class="form-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>Basic Information
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="exam_name" class="form-label">Select Exam <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="exam_name" name="exam_name" required>
+                                            <option value="">Choose an exam...</option>
+                                            <option value="CIA 1">CIA 1</option>
+                                            <option value="Model Exam">Model Exam</option>
+                                        </select>
+                                        <label for="exam_date" class="form-label mt-3">Exam Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="exam_date" name="exam_date" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="name" class="form-label">Allocation Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" placeholder="Optional custom name">
+                                        <div class="form-text">Leave blank to auto-generate from exam name and date</div>
+                                        <label for="institution_name" class="form-label mt-3">Institution Name</label>
+                                        <input type="text" class="form-control" id="institution_name" name="institution_name" placeholder="e.g., Dr. N. G. P. Arts & Science College" value="Dr. N. G. P. Arts & Science College">
+                                        <label for="department" class="form-label mt-3">Department <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="department" name="department" placeholder="e.g., Computer Science" required>
+                                        <div class="form-text">Required for PDF generation</div>
+                                        <label for="academic_year" class="form-label mt-3">Academic Year</label>
+                                        <input type="text" class="form-control" id="academic_year" name="academic_year" placeholder="e.g., 2025-2026" value="" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Semester and Subject Selection -->
+                            <div class="form-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-graduation-cap me-2"></i>Semester & Subject Selection
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="semester_type" class="form-label">Semester Type <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="semester_type" name="semester_type" required>
+                                            <option value="">Choose semester type...</option>
+                                            <option value="odd">Odd Semester</option>
+                                            <option value="even">Even Semester</option>
+                                        </select>
+                                        <div class="form-text">Select whether this is an odd or even semester exam</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Subject Selection <span class="text-danger">*</span></label>
+                                        <div class="d-flex gap-2 mb-2">
+                                            <a href="{% url 'seating:subject_management' %}" class="btn btn-outline-primary" target="_blank" title="Add New Subject">
+                                                <i class="fas fa-plus"></i> Manage Subjects
+                                            </a>
+                                        </div>
+                                        <div class="form-text">Select one subject per year below. Add subjects via the link above.</div>
+                                    </div>
+                                </div>
+                                <!-- Dynamic subject selects per year -->
+                                <div id="subjectSelects" class="mt-3">
+                                    <!-- Subject selects will be dynamically added here -->
+                                </div>
+                            </div>
+
+                            <!-- Room Configuration -->
+                            <div class="form-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-building me-2"></i>Room Configuration
+                                </h5>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label for="num_rooms" class="form-label">Number of Rooms <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="num_rooms" name="num_rooms"
+                                               min="1" max="20" value="1" required>
+                                        <div class="form-text">How many exam halls to create</div>
+                                    </div>
+                                </div>
+
+                                <div id="roomsContainer" class="mt-3">
+                                    <!-- Dynamic room inputs will be added here -->
+                                </div>
+                            </div>
+
+                            <!-- Algorithm Settings -->
+                            <div class="form-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-brain me-2"></i>Allocation Settings
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="allocation_mode" class="form-label">Allocation Mode <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="allocation_mode" name="allocation_mode" required>
+                                            <option value="cycle">Cycle Mode (Sequential Allocation)</option>
+                                            <option value="block">Block Mode (Random Selection Per Room)</option>
+                                        </select>
+                                        <div class="form-text">
+                                            <strong>Cycle Mode:</strong> Takes students in order, round-robin sections<br>
+                                            <strong>Block Mode:</strong> Randomly selects N students for each room
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="random_seed" class="form-label">Random Seed (Optional)</label>
+                                        <input type="number" class="form-control" id="random_seed" name="random_seed"
+                                               placeholder="Leave blank for random">
+                                        <div class="form-text">
+                                            For reproducible allocations (same seed = same result)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="flip_lr" name="flip_lr">
+                                            <label class="form-check-label" for="flip_lr">
+                                                Flip Left-Right Seating
+                                            </label>
+                                        </div>
+                                        <div class="form-text">
+                                            Alternate left-right positioning for adjacent rooms
+                                        </div>
+                                    </div>
+                                </div>
+
+                                 Bench Pattern Preview
+                                <div class="algorithm-preview mt-3">
+                                    <h6><i class="fas fa-th me-2"></i>Bench Type Pattern Preview</h6>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Default pattern (repeats for each room):</small>
+                                    </div>
+                                    <div id="patternPreview">
+                                        <span class="bench-pattern type-A">A</span>
+                                        <span class="bench-pattern type-B">B</span>
+                                        <span class="bench-pattern type-C">C</span>
+                                        <span class="bench-pattern type-A">A</span>
+                                        <span class="bench-pattern type-B">B</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <strong>Type A:</strong> 1st-2nd, 2nd-3rd, 3rd-1st |
+                                            <strong>Type B:</strong> 2nd-3rd, 3rd-1st, 1st-2nd |
+                                            <strong>Type C:</strong> 3rd-1st, 1st-2nd, 2nd-3rd
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary btn-lg" id="createAllocationBtn">
+                                    <i class="fas fa-play me-2"></i>Create Allocation
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="card mt-4 shadow">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-question-circle me-2"></i>How the Algorithm Works
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Anti-Cheating Measures:</h6>
+                                <ul>
+                                    <li><strong>Bench Types:</strong> Different seating patterns per bench</li>
+                                    <li><strong>Year Separation:</strong> Same year students not on same bench</li>
+                                    <li><strong>Pattern Rotation:</strong> Different patterns per room</li>
+                                    <li><strong>Distribution Strategies:</strong> Even student spread</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Distribution Strategies:</h6>
+                                <ul>
+                                    <li><strong>Block:</strong> Group students by year across rooms</li>
+                                    <li><strong>Round Robin:</strong> Distribute evenly across rooms</li>
+                                    <li><strong>Seeded Shuffle:</strong> Shuffle within years, then distribute</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Pass Django template variables to JavaScript
+        const AVAILABLE_YEARS = [...new Set(JSON.parse('{{ available_years|escapejs }}'))]; // Deduplicate
+        const SUBJECT_CACHE = {};
+        let isGenerating = false; // Flag to prevent concurrent generation
+        // Function to generate room input sections
+        function generateRoomInputs(numRooms) {
+            const container = document.getElementById('roomsContainer');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= numRooms; i++) {
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'room-input-section border rounded p-3 mb-3';
+                roomDiv.innerHTML = `
+                    <h6>Room ${i}</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="room_name_${i}" class="form-label">Room Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="room_name_${i}" name="room_name_${i}" placeholder="e.g., Hall A" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="room_rows_${i}" class="form-label">Rows <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control room-rows" id="room_rows_${i}" name="room_rows_${i}" min="1" max="20" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="room_cols_${i}" class="form-label">Columns <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control room-cols" id="room_cols_${i}" name="room_cols_${i}" min="1" max="20" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="room_benches_${i}" class="form-label">Benches</label>
+                            <input type="number" class="form-control room-benches" id="room_benches_${i}" name="room_benches_${i}" readonly>
+                            <div class="form-text">Auto-calculated</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(roomDiv);
+            }
+
+            // Add event listeners for benches calculation
+            document.querySelectorAll('.room-rows, .room-cols').forEach(input => {
+                input.addEventListener('input', updateBenchesForRoom);
+            });
+        }
+
+        // Function to update benches for a specific room
+        function updateBenchesForRoom(event) {
+            const input = event.target;
+            const roomIndex = input.id.split('_')[2];
+            const rowsInput = document.getElementById(`room_rows_${roomIndex}`);
+            const colsInput = document.getElementById(`room_cols_${roomIndex}`);
+            const benchesInput = document.getElementById(`room_benches_${roomIndex}`);
+
+            const rows = parseInt(rowsInput.value) || 0;
+            const cols = parseInt(colsInput.value) || 0;
+            benchesInput.value = rows * cols;
+        }
+
+        // Update room inputs when number of rooms changes
+        document.getElementById('num_rooms').addEventListener('input', function() {
+            const numRooms = parseInt(this.value) || 1;
+            generateRoomInputs(numRooms);
+        });
+
+        // Initialize with default number of rooms
+        generateRoomInputs(1);
+
+        // Form validation
+        document.getElementById('allocationForm').addEventListener('submit', function(e) {
+            updateAcademicYear();
+            const numRooms = parseInt(document.getElementById('num_rooms').value) || 0;
+            if (numRooms < 1) {
+                e.preventDefault();
+                alert('Please enter at least 1 room.');
+                return;
+            }
+
+            // Validate each room
+            for (let i = 1; i <= numRooms; i++) {
+                const roomName = document.getElementById(`room_name_${i}`).value.trim();
+                const rows = parseInt(document.getElementById(`room_rows_${i}`).value) || 0;
+                const cols = parseInt(document.getElementById(`room_cols_${i}`).value) || 0;
+                const benches = parseInt(document.getElementById(`room_benches_${i}`).value) || 0;
+
+                if (!roomName) {
+                    e.preventDefault();
+                    alert(`Please enter a name for Room ${i}.`);
+                    return;
+                }
+
+                if (rows < 1 || cols < 1) {
+                    e.preventDefault();
+                    alert(`Rows and columns for Room ${i} must be at least 1.`);
+                    return;
+                }
+
+                if (benches !== rows * cols) {
+                    e.preventDefault();
+                    alert(`Benches for Room ${i} must equal rows × columns.`);
+                    return;
+                }
+            }
+
+            const btn = document.getElementById('createAllocationBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Allocation...';
+        });
+
+        // Auto-generate allocation name
+        function updateAllocationName() {
+            const examName = document.getElementById('exam_name').value;
+            const examDate = document.getElementById('exam_date').value;
+            const nameInput = document.getElementById('name');
+            if (!nameInput.value && examName && examDate) {
+                nameInput.value = `${examName} - ${examDate}`;
+            }
+        }
+
+        // Compute academic year from date (June-May academic cycle)
+        function updateAcademicYear() {
+            const examDate = document.getElementById('exam_date').value;
+            const academicYearInput = document.getElementById('academic_year');
+            if (!examDate) {
+                academicYearInput.value = '';
+                return;
+            }
+
+            const date = new Date(examDate);
+            if (Number.isNaN(date.getTime())) {
+                academicYearInput.value = '';
+                return;
+            }
+
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            const startYear = month >= 6 ? year : year - 1;
+            academicYearInput.value = `${startYear}-${startYear + 1}`;
+        }
+
+        document.getElementById('exam_name').addEventListener('change', updateAllocationName);
+        document.getElementById('exam_date').addEventListener('change', function() {
+            updateAllocationName();
+            updateAcademicYear();
+        });
+        document.getElementById('exam_date').addEventListener('input', updateAcademicYear);
+        document.getElementById('exam_date').addEventListener('blur', updateAcademicYear);
+        updateAcademicYear();
+
+        // Dynamic subject selects based on semester type
+        document.getElementById('semester_type').addEventListener('change', function () {
+            const semesterType = this.value;
+            const container = document.getElementById('subjectSelects');
+
+            container.innerHTML = '';
+
+            if (!semesterType) return;
+
+            if (SUBJECT_CACHE[semesterType]) {
+                buildSubjectDropdowns(semesterType, SUBJECT_CACHE[semesterType]);
+                return;
+            }
+
+            container.innerHTML = '<div class="text-muted">Loading subjects...</div>';
+
+            fetch(`/seating/api/subjects/by-semester/?semester_type=${semesterType}`)
+                .then(res => res.json())
+                .then(data => {
+                    SUBJECT_CACHE[semesterType] = data;
+                    container.innerHTML = '';
+                    buildSubjectDropdowns(semesterType, data);
+                })
+                .catch(() => {
+                    container.innerHTML = '<div class="alert alert-danger">Failed to load subjects</div>';
+                });
+        });
+
+        // Function to generate subject selects for each year based on semester type
+        function buildSubjectDropdowns(semesterType, subjectsBySemester) {
+            if (isGenerating) return; // Prevent concurrent generation
+            isGenerating = true;
+
+            const container = document.getElementById('subjectSelects');
+            container.innerHTML = '';
+
+            const YEAR_TO_SEM = semesterType === 'odd'
+                ? {1: 1, 2: 3, 3: 5}
+                : {1: 2, 2: 4, 3: 6};
+
+            AVAILABLE_YEARS.forEach(year => {
+                const semester = YEAR_TO_SEM[year];
+                if (!semester) return;
+
+                const subjects = subjectsBySemester[String(semester)] || [];
+                // Remove duplicates by subject id to ensure each subject appears only once
+                const uniqueSubjects = subjects.filter((subject, index, self) =>
+                    self.findIndex(s => s.id === subject.id) === index
+                );
+
+                const block = document.createElement('div');
+                block.className = 'mb-3';
+
+                block.innerHTML = `
+                    <label class="form-label">
+                        Subject for Year ${year} (Semester ${semester}) <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select" name="subject_semester_${semester}" required>
+                        <option value="">Choose subject...</option>
+                        ${uniqueSubjects.map(s =>
+                            `<option value="${s.id}">
+                                ${s.name}${s.subject_code ? ` (${s.subject_code})` : ''}
+                            </option>`
+                        ).join('')}
+                    </select>
+                `;
+
+                container.appendChild(block);
+            });
+
+            isGenerating = false; // Reset flag after completion
+        }
+    </script>
+</body>
+</html> 
+
+
+
+

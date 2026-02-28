@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allocation History - Exam Seating System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .allocation-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .allocation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            font-size: 0.8em;
+        }
+        .action-buttons {
+            opacity: 0.8;
+        }
+        .action-buttons:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'seating:home' %}">
+                <i class="fas fa-chair me-2"></i>Exam Seating System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{% url 'seating:upload_form' %}">
+                    <i class="fas fa-upload me-1"></i>Upload Data
+                </a>
+                <a class="nav-link" href="{% url 'seating:allocation_form' %}">
+                    <i class="fas fa-cogs me-1"></i>Create Allocation
+                </a>
+                <a class="nav-link active" href="{% url 'seating:allocation_history' %}">
+                    <i class="fas fa-history me-1"></i>History
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2>
+                            <i class="fas fa-history me-2"></i>Allocation History
+                        </h2>
+                        <p class="text-muted mb-0">View and manage your seating allocations</p>
+                    </div>
+                    <a href="{% url 'seating:allocation_form' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Allocation
+                    </a>
+                </div>
+
+                {% if allocations %}
+                <div class="row">
+                    {% for allocation in allocations %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card allocation-card h-100">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">{{ allocation.name }}</h6>
+                                    <span class="badge bg-primary status-badge">Active</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <strong>Exam:</strong> {{ allocation.exam.name }}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Rooms:</strong> {{ allocation.num_rooms }}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Benches:</strong> {{ allocation.benches_per_room }} per room
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Created:</strong> {{ allocation.created_at|date:"M d, Y H:i" }}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Strategy:</strong>
+                                    <span class="badge bg-secondary">{{ allocation.get_distribution_strategy_display }}</span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="d-flex justify-content-between action-buttons">
+                                    <a href="{% url 'seating:preview' allocation.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>Preview
+                                    </a>
+                                    <a href="{% url 'seating:allocation_pdf' allocation.id %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-download me-1"></i>PDF
+                                    </a>
+                                    <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete the allocation "{{ allocation.name }}"? This action cannot be undone.');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="allocation_id" value="{{ allocation.id }}">
+                                        <button type="submit" name="delete" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center mt-5">
+                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Allocations Yet</h4>
+                    <p class="text-muted">Create your first seating allocation to get started.</p>
+                    <a href="{% url 'seating:allocation_form' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create First Allocation
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

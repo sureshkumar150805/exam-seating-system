@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uploaded Files</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .batch-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .batch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .batch-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .batch-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .year-section-group {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .group-header {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .student-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .student-item {
+            background-color: white;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .student-roll {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .student-name {
+            color: #6c757d;
+        }
+        .no-data {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .back-link:hover {
+            background-color: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'seating:upload_form' %}" class="back-link">← Back to Upload</a>
+        <h1>Uploaded Student Files</h1>
+
+        {% if batch_details %}
+            {% for batch in batch_details %}
+                <div class="batch-card">
+                    <div class="batch-header">
+                        <div class="batch-info">
+                            Batch ID: {{ batch.batch_id }} - Year {{ batch.year }} Section {{ batch.section }}
+                        </div>
+                        <div class="batch-stats">
+                            <span>Total Students: {{ batch.total_students }}</span>
+                            <span>Upload Time: {{ batch.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </div>
+
+                    {% for group_key, students in batch.year_sec_groups.items %}
+                        <div class="year-section-group">
+                            <div class="group-header">
+                                {{ group_key|upper }} - {{ students|length }} Students
+                            </div>
+                            <div class="student-list">
+                                {% for student in students %}
+                                    <div class="student-item">
+                                        <div class="student-roll">{{ student.roll }}</div>
+                                        <div class="student-name">{{ student.name }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-data">
+                <h3>No uploaded files found</h3>
+                <p>Upload some student Excel files to see them displayed here.</p>
+                <a href="{% url 'seating:upload_form' %}" style="color: #007bff;">Go to Upload Form</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

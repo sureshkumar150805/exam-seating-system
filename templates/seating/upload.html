@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Student Data</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f2f6f8;
+            --surface: #ffffff;
+            --surface-2: #f8fbfc;
+            --ink: #16232e;
+            --muted: #637585;
+            --primary: #0f6a73;
+            --primary-2: #12828d;
+            --line: #d7e3ea;
+            --ok-bg: #ebf9f1;
+            --ok-line: #b8e7cc;
+            --ok-ink: #0d6a3f;
+            --err-bg: #fff1ef;
+            --err-line: #f0c2bc;
+            --err-ink: #8f2d23;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            color: var(--ink);
+            background: radial-gradient(circle at 5% 0%, #e8f4f6 0%, transparent 30%),
+                        radial-gradient(circle at 95% 10%, #fff1e6 0%, transparent 28%),
+                        var(--bg);
+        }
+
+        .navbar.bg-primary {
+            background: linear-gradient(120deg, var(--primary) 0%, var(--primary-2) 100%) !important;
+        }
+
+        .navbar-brand, .nav-link { font-weight: 700; }
+        .nav-link { opacity: 0.9; }
+        .nav-link:hover, .nav-link.active { opacity: 1; color: #fff !important; }
+
+        .upload-card {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(20, 54, 80, 0.08);
+            overflow: hidden;
+            background: var(--surface);
+        }
+
+        .upload-header {
+            background: linear-gradient(120deg, var(--primary), var(--primary-2));
+            color: #fff;
+            padding: 1rem 1.25rem;
+        }
+
+        .upload-body {
+            padding: 1.25rem;
+        }
+
+        .form-section {
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1rem;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #1e3443;
+            margin-bottom: 6px;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid #cbdbe4;
+            border-radius: 10px;
+            min-height: 46px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-2);
+            box-shadow: 0 0 0 .2rem rgba(15,106,115,.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(120deg, var(--primary), var(--primary-2));
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .btn-success {
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .alert-success {
+            border: 1px solid var(--ok-line);
+            background: var(--ok-bg);
+            color: var(--ok-ink);
+        }
+
+        .alert-danger {
+            border: 1px solid var(--err-line);
+            background: var(--err-bg);
+            color: var(--err-ink);
+        }
+
+        @media (max-width: 768px) {
+            .upload-body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'seating:home' %}">
+                <i class="fas fa-chair me-2"></i>Exam Seating System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" href="{% url 'seating:upload_form' %}">
+                    <i class="fas fa-upload me-1"></i>Upload Data
+                </a>
+                <a class="nav-link" href="{% url 'seating:allocation_form' %}">
+                    <i class="fas fa-cogs me-1"></i>Create Allocation
+                </a>
+                <a class="nav-link" href="{% url 'seating:allocation_history' %}">
+                    <i class="fas fa-history me-1"></i>History
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                <div class="upload-card">
+                    <div class="upload-header">
+                        <h2 class="mb-0"><i class="fas fa-file-upload me-2"></i>Upload Student Data</h2>
+                    </div>
+                    <div class="upload-body">
+                        <form method="post" enctype="multipart/form-data" class="form-section">
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="year" class="form-label">Academic Year</label>
+                                    <select id="year" name="year" class="form-select" required>
+                                        <option value="">Select Year</option>
+                                        <option value="1">1st Year</option>
+                                        <option value="2">2nd Year</option>
+                                        <option value="3">3rd Year</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="section" class="form-label">Section</label>
+                                    <select id="section" name="section" class="form-select" required>
+                                        <option value="">Select Section</option>
+                                        <option value="A">Section A</option>
+                                        <option value="B">Section B</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label for="excel_files" class="form-label">Select Excel Files (Multiple allowed)</label>
+                                    <input type="file" id="excel_files" name="excel_files" class="form-control" accept=".xlsx,.xls,.csv" multiple required>
+                                    <div class="form-text">You can select multiple files for the same year and section.</div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-cloud-upload-alt me-2"></i>Upload and Process
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        {% if success_message %}
+                            <div class="alert alert-success mt-3 mb-0">
+                                <div>{{ success_message }}</div>
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+                                    <a href="{% url 'seating:allocation_form' %}" class="btn btn-success">
+                                        <i class="fas fa-arrow-right me-1"></i>Proceed to Allocation
+                                    </a>
+                                    <a href="{% url 'seating:uploaded_files' %}" class="btn btn-success">
+                                        <i class="fas fa-list me-1"></i>View Uploaded Files
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if error_message %}
+                            <div class="alert alert-danger mt-3 mb-0">
+                                <i class="fas fa-exclamation-circle me-2"></i>{{ error_message }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

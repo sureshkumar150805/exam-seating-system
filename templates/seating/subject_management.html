@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subject Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Subject Management</h2>
+
+    <!-- Success/Error Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Add/Edit Subject Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Add/Edit Subject</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="subject_id" id="subject_id" value="">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Subject Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="subject_code" class="form-label">Subject Code</label>
+                        <input type="text" class="form-control" id="subject_code" name="subject_code">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="semester" class="form-label">Semester *</label>
+                        <select class="form-select" id="semester" name="semester" required>
+                            <option value="">Select Semester</option>
+                            <option value="1">1st Semester</option>
+                            <option value="2">2nd Semester</option>
+                            <option value="3">3rd Semester</option>
+                            <option value="4">4th Semester</option>
+                            <option value="5">5th Semester</option>
+                            <option value="6">6th Semester</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Add Subject</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Subjects List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Existing Subjects</h5>
+        </div>
+        <div class="card-body">
+            {% for semester_label, subjects in subjects_by_semester.items %}
+                <h6 class="text-primary mb-3">{{ semester_label }}</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Code</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for subject in subjects %}
+                                <tr>
+                                    <td>{{ subject.name }}</td>
+                                    <td>{{ subject.subject_code|default:"-" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary edit-btn"
+                                                data-id="{{ subject.id }}"
+                                                data-name="{{ subject.name }}"
+                                                data-code="{{ subject.subject_code }}"
+                                                data-semester="{{ subject.semester }}">
+                                            Edit
+                                        </button>
+                                        <form method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this subject?')">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                                            <input type="hidden" name="delete" value="1">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-muted">No subjects found for {{ semester_label }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% empty %}
+                <p class="text-muted">No subjects found. Add your first subject above.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle edit button clicks
+document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.id;
+        const name = this.dataset.name;
+        const code = this.dataset.code;
+        const semester = this.dataset.semester;
+
+        // Populate form
+        document.getElementById('subject_id').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('subject_code').value = code;
+        document.getElementById('semester').value = semester;
+
+        // Update button text
+        document.getElementById('submit-btn').textContent = 'Update Subject';
+        document.getElementById('cancel-btn').style.display = 'inline-block';
+
+        // Scroll to form
+        document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+    });
+});
+
+// Handle cancel button
+document.getElementById('cancel-btn').addEventListener('click', function() {
+    // Reset form
+    document.getElementById('subject_id').value = '';
+    document.getElementById('name').value = '';
+    document.getElementById('subject_code').value = '';
+    document.getElementById('semester').value = '';
+
+    // Reset button
+    document.getElementById('submit-btn').textContent = 'Add Subject';
+    this.style.display = 'none';
+});
+</script>
+
+<style>
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+</style>
+{% endblock %}

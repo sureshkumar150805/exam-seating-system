@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allocation Preview - Exam Seating System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .room-slider {
+            margin-top: 20px;
+        }
+        .room-slide {
+            display: none;
+        }
+        .room-slide.active {
+            display: block;
+        }
+        .room-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .room-header {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: bold;
+        }
+        .bench-layout {
+            display: grid;
+            gap: 8px;
+            padding: 15px;
+            grid-auto-flow: column;
+        }
+        .bench {
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 8px;
+            background-color: #fff;
+            position: relative;
+            min-height: 48px;
+            overflow: hidden;
+        }
+        .bench-number {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        .seat {
+            display: inline-block;
+            width: 45%;
+            height: 30px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin: 2px;
+            text-align: center;
+            font-size: 0.8em;
+            line-height: 28px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .seat.left { float: left; }
+        .seat.right { float: right; }
+        .seat.occupied {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        .seat.empty {
+            background-color: #f5f5f5;
+            color: #999;
+        }
+        .year-1 { background-color: #e8f5e8 !important; border-color: #4caf50 !important; }
+        .year-2 { background-color: #fff3e0 !important; border-color: #ff9800 !important; }
+        .year-3 { background-color: #fce4ec !important; border-color: #e91e63 !important; }
+        .bench-type-A { border-color: #4caf50; border-width: 2px; }
+        .bench-type-B { border-color: #2196f3; border-width: 2px; }
+        .bench-type-C { border-color: #f44336; border-width: 2px; }
+        .legend {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+            font-size: 0.9em;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 2px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        .card-stat {
+            text-align: center;
+        }
+        .card-stat .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+        }
+        .card-stat .card-text {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .clearfix::after {
+            content: "";
+            display: block;
+            clear: both;
+        }
+        .room-summary {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-top: 1px solid #dee2e6;
+            font-size: 0.9rem;
+        }
+        .room-summary span {
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'seating:home' %}">
+            <i class="fas fa-chair me-2"></i>Exam Seating System
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="{% url 'seating:upload_form' %}">
+                <i class="fas fa-upload me-1"></i>Upload Data
+            </a>
+            <a class="nav-link" href="{% url 'seating:allocation_form' %}">
+                <i class="fas fa-cogs me-1"></i>Create Allocation
+            </a>
+            <a class="nav-link active" href="{% url 'seating:allocation_history' %}">
+                <i class="fas fa-history me-1"></i>History
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-4">
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>
+                        <i class="fas fa-eye me-2"></i>Allocation Preview
+                    </h2>
+                    <h5 class="text-muted">{{ allocation.name }}</h5>
+                    <p class="mb-0">
+                        Exam: {{ allocation.exam.name }} |
+                        Created: {{ allocation.created_at|date:"M d, Y H:i" }}
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'seating:allocation_pdf' allocation.id %}" class="btn btn-primary me-2">
+                        <i class="fas fa-download me-2"></i>Download PDF
+                    </a>
+                    <a href="{% url 'seating:allocation_form' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-2"></i>New Allocation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <h6><i class="fas fa-info-circle me-2"></i>Legend</h6>
+        <div class="legend-item">
+            <span class="legend-color year-1"></span>Year 1
+        </div>
+        <div class="legend-item">
+            <span class="legend-color year-2"></span>Year 2
+        </div>
+        <div class="legend-item">
+            <span class="legend-color year-3"></span>Year 3
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #f5f5f5; border: 1px solid #ccc;"></span>Empty Seat (exam spacing)
+        </div>
+        <div class="legend-item">
+            <strong>Bench Styles:</strong>
+            <span class="badge bg-success ms-2">A</span>
+            <span class="badge bg-primary ms-1">B</span>
+            <span class="badge bg-danger ms-1">C</span>
+            <small class="text-muted ms-2">(for visual distinction only)</small>
+        </div>
+    </div>
+
+    <!-- Global Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card card-stat">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">{{ allocation.num_rooms }}</h5>
+                    <p class="card-text">Total Rooms</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stat">
+                <div class="card-body">
+                    <h5 class="card-title text-success">{{ total_students }}</h5>
+                    <p class="card-text">Total Students (All Rooms)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card card-stat">
+                <div class="card-body">
+                    <h5 class="card-title text-info">{{ global_year_counts.1|default:0 }}</h5>
+                    <p class="card-text">Year 1 Students</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card card-stat">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">{{ global_year_counts.2|default:0 }}</h5>
+                    <p class="card-text">Year 2 Students</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card card-stat">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">{{ global_year_counts.3|default:0 }}</h5>
+                    <p class="card-text">Year 3 Students</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if rooms_data %}
+    <!-- Room Navigation -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <button id="prevRoom" class="btn btn-outline-primary" disabled>
+            <i class="fas fa-chevron-left me-2"></i>Previous Room
+        </button>
+        <div id="roomIndicator" class="h5 mb-0">Room 1 of {{ rooms_data|length }}</div>
+        <button id="nextRoom" class="btn btn-outline-primary">
+            <i class="fas fa-chevron-right ms-2"></i>Next Room
+        </button>
+    </div>
+
+    <!-- Room Slider -->
+    <div class="room-slider">
+        {% for room_name, room_data in rooms_data.items %}
+        <div class="room-slide{% if forloop.first %} active{% endif %}">
+            <div class="room-card">
+                <div class="room-header">
+                    <i class="fas fa-building me-2"></i>{{ room_name }} 
+                    <span class="ms-2 fw-bold">
+                        {% if room_data.section %}
+                            Year {{ room_data.year }} – Section {{ room_data.section }}
+                        {% else %}
+                            Year {{ room_data.year }}
+                        {% endif %}
+                    </span>
+                    <span class="badge bg-secondary ms-2">{{ room_data.total_benches }} benches</span>
+                </div>
+
+                <!-- Room summary: students per year in this room -->
+                <div class="room-summary">
+                    <span><strong>Total Students:</strong> {{ room_data.total_students }}</span>
+                    <span><strong>Year 1:</strong> {{ room_data.year_counts.1|default:0 }}</span>
+                    <span><strong>Year 2:</strong> {{ room_data.year_counts.2|default:0 }}</span>
+                    <span><strong>Year 3:</strong> {{ room_data.year_counts.3|default:0 }}</span>
+                </div>
+
+                <div class="bench-layout bench-layout-{{ forloop.counter }}" data-cols="{{ room_data.cols }}" data-rows="{{ room_data.rows }}">
+                    {% for bench in room_data.grid_list %}
+                    <div class="bench bench-type-{{ bench.bench_type }}">
+                        <div class="bench-number">{{ bench.bench_no }}</div>
+                        <div class="clearfix">
+                            <div class="seat left {% if bench.left_student %}occupied year-{{ bench.left_student.year }}{% else %}empty{% endif %}">
+                                {% if bench.left_student %}
+                                    {{ bench.left_student.roll }}
+                                {% else %}
+                                    Empty
+                                {% endif %}
+                            </div>
+                            <div class="seat right {% if bench.right_student %}occupied year-{{ bench.right_student.year }}{% else %}empty{% endif %}">
+                                {% if bench.right_student %}
+                                    {{ bench.right_student.roll }}
+                                {% else %}
+                                    Empty
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>No seating allocations found for this allocation.
+    </div>
+    {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set CSS grid columns/rows based on data attributes
+        var benchLayouts = document.querySelectorAll('.bench-layout');
+        benchLayouts.forEach(function(layout) {
+            var cols = layout.getAttribute('data-cols');
+            var rows = layout.getAttribute('data-rows');
+            if (cols) {
+                layout.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+            }
+            if (rows) {
+                layout.style.gridTemplateRows = 'repeat(' + rows + ', auto)';
+            }
+        });
+
+        // Room slider functionality
+        var roomSlides = document.querySelectorAll('.room-slide');
+        var prevButton = document.getElementById('prevRoom');
+        var nextButton = document.getElementById('nextRoom');
+        var roomIndicator = document.getElementById('roomIndicator');
+        var currentRoomIndex = 0;
+
+        function showRoom(index) {
+            roomSlides.forEach(function(slide, i) {
+                if (i === index) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+            roomIndicator.textContent = 'Room ' + (index + 1) + ' of ' + roomSlides.length;
+            prevButton.disabled = index === 0;
+            nextButton.disabled = index === roomSlides.length - 1;
+        }
+
+        prevButton.addEventListener('click', function() {
+            if (currentRoomIndex > 0) {
+                currentRoomIndex--;
+                showRoom(currentRoomIndex);
+            }
+        });
+
+        nextButton.addEventListener('click', function() {
+            if (currentRoomIndex < roomSlides.length - 1) {
+                currentRoomIndex++;
+                showRoom(currentRoomIndex);
+            }
+        });
+
+        // Initialize first room
+        showRoom(currentRoomIndex);
+    });
+</script>
+</body>
+</html>

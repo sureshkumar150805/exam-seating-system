@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Seating Arrangement</title>
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15pt;
+            border-bottom: 1pt solid #333;
+            padding-bottom: 8pt;
+        }
+        .institution {
+            font-size: 14pt;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+        }
+        .academic-year {
+            font-size: 12pt;
+            text-align: right;
+        }
+        .exam-details {
+            margin-bottom: 12pt;
+            text-align: center;
+        }
+        .exam-details p {
+            margin: 3pt 0;
+            font-size: 11pt;
+        }
+        .room-details {
+            margin-bottom: 15pt;
+            background-color: #f8f9fa;
+            padding: 6pt;
+            border: 1pt solid #dee2e6;
+            text-align: center;
+        }
+        .room-details p {
+            margin: 2pt 0;
+            font-size: 10pt;
+        }
+        .seating-layout {
+            margin-bottom: 20pt;
+        }
+        .classroom {
+            display: grid;
+            gap: 8pt;
+            margin-top: 15pt;
+            grid-template-rows: repeat(var(--rows), 1fr);
+            grid-template-columns: repeat(var(--cols), 1fr);
+        }
+        .bench {
+            border: 2pt solid #000;
+            border-radius: 3pt;
+            padding: 4pt;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 25pt;
+        }
+        .seat {
+            border: 1pt solid #666;
+            border-radius: 2pt;
+            padding: 2pt 4pt;
+            background-color: #f9f9f9;
+            text-align: center;
+            font-size: 8pt;
+            font-weight: bold;
+            min-width: 35pt;
+            flex: 1;
+            margin: 0 2pt;
+        }
+        .seat.empty {
+            background-color: #e0e0e0;
+            color: #888;
+            font-style: italic;
+        }
+        .summary {
+            margin-top: 25pt;
+            border-top: 1pt solid #333;
+            padding-top: 8pt;
+            text-align: center;
+        }
+        .summary p {
+            margin: 2pt 0;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        .room {
+            break-inside: avoid;
+            break-after: page;
+        }
+        .room:last-child {
+            break-after: auto;
+        }
+        .signature {
+            margin-top: 60pt;
+            text-align: center;
+        }
+        .signature-line {
+            display: inline-block;
+            width: 140pt;
+            border-bottom: 1pt solid #333;
+            margin: 0 15pt;
+            text-align: center;
+            font-size: 10pt;
+            padding-top: 25pt;
+        }
+    </style>
+</head>
+<body>
+    {% for room_name, room_data in rooms_data.items %}
+    <div class="room">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="institution">{{ allocation.institution_name }}</div>
+            <div class="academic-year">{{ allocation.academic_year }}</div>
+        </div>
+
+        <!-- Exam Details Section -->
+        <div class="exam-details">
+            <p><strong>{{ allocation.exam.name }}</strong></p>
+            <p><strong>Date:</strong> {{ allocation.exam.date|date:"d-m-Y" }}</p>
+            <p><strong>Subject:</strong> {% firstof allocation.subjects.first.name "N/A" %}</p>
+        </div>
+
+        <!-- Room Details -->
+        <div class="room-details">
+            <p><strong>{{ room_name }}</strong></p>
+            <p><strong>Total Benches:</strong> {{ room_data.total_benches }}</p>
+            <p><strong>Total Students:</strong> {{ room_data.total_students }}</p>
+        </div>
+
+        <!-- Seating Layout Section -->
+        <div class="seating-layout">
+            <div class="classroom" style="--rows: {{ room_data.rows }}; --cols: {{ room_data.cols }};">
+                {% for bench in room_data.grid.values %}
+                <div class="bench">
+                    <div class="seat {% if not bench.left_student %}empty{% endif %}">
+                        {% if bench.left_student %}
+                            {{ bench.left_student.roll }}
+                        {% else %}
+                            Empty
+                        {% endif %}
+                    </div>
+                    <div class="seat {% if not bench.right_student %}empty{% endif %}">
+                        {% if bench.right_student %}
+                            {{ bench.right_student.roll }}
+                        {% else %}
+                            Empty
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Bottom Summary Section -->
+        <div class="summary">
+            {% for year, count in room_data.year_counts.items %}
+                {% if count > 0 %}
+                    {% if year == 1 %}
+                        <p>I Year: {{ room_data.year_ranges.1 }} = {{ count }} Students</p>
+                    {% elif year == 2 %}
+                        <p>II Year: {{ room_data.year_ranges.2 }} = {{ count }} Students</p>
+                    {% elif year == 3 %}
+                        <p>III Year: {{ room_data.year_ranges.3 }} = {{ count }} Students</p>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Signature Section (Last Page Only) -->
+    <div class="signature">
+        <div class="signature-line">Signature of Exam In-Charge</div>
+        <div class="signature-line">Signature of HOD</div>
+    </div>
+</body>
+</html>
