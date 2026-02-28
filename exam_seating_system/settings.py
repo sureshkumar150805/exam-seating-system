@@ -26,8 +26,13 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-2xnh2z2bjx6#9#u7w5-a9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',')
+#ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',')
 
+ALLOWED_HOSTS = [
+    "exam-seating-system-xsl8.onrender.com",
+    "localhost",
+    "127.0.0.1"
+]
 
 # Application definition
 
